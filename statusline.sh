@@ -1,7 +1,7 @@
 #!/bin/sh
 
 STATUSLINE_LOCK="${HOME}/.tmux.statusline.pid"
-STATUSLINE="${HOME}/.dotfiles/scripts/tmux/statusline.py"
+STATUSLINE="$(dirname $0)/statusline.py"
 STDERR="/tmp/tmux.statusline.stderr"
 STDOUT="/tmp/tmux.statusline.stdout"
 
