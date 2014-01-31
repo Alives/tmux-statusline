@@ -1,19 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- 
-"""Generate an informative statusline for tmux.
-
-Using classes defined within, output the right side of the status line for tmux
-as a string when a client connects.  This uses sockets which has the advantage
-of not running when it is not needed as the updates are only generated on
-request.
-"""
+"""Network module for tmux-statusline."""
 
 
 import os
-import signal
-import socket
 from subprocess import PIPE, Popen
-from time import strftime, time
+from time import time
 
 
 class Network():
@@ -137,107 +129,3 @@ class Network():
     self.GetUnits()
     self.GetStatusLine()
     return self.status_line
-
-
-class Load():
-  """Get the current load and return it for output."""
-  PREFIX = '#[fg=colour34,bg=colour0]#[fg=colour255,bg=colour34]'
-  SUFFIX = '#[fg=colour0,bg=colour34]'
-
-  def Update(self):
-    load = ' '.join(['%0.2f' % x for x in os.getloadavg()])
-    status = '%s %s %s' % (self.PREFIX, load, self.SUFFIX)
-    return status
-
-
-class Clock():
-  """Get the current time and return it for output."""
-  PREFIX = '#[fg=colour220,bg=colour0]#[fg=colour0,bg=colour220]'
-  SUFFIX = '#[default]'
-
-  def Update(self):
-    time_str = strftime('%l:%M:%S %p').lstrip()
-    status = '%s %s %s' % (self.PREFIX, time_str, self.SUFFIX)
-    return status
-
-
-class StatusLine():
-  """The main statusline class."""
-  HOST = '127.0.0.1'
-  PORT = 61234
-  STATUSLINE_LOCK = '%s/.tmux.statusline.pid' % os.environ['HOME']
-  TMUX_CONF = '%s/.tmux.conf' % os.environ['HOME']
-
-  def __init__(self):
-    self.GetLock()
-    self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-
-  def CheckPid(self, pid):
-    """Check if a pid is valid (running)."""
-    try:
-      os.kill(pid, 0)
-    except:
-      return False
-    else:
-      return True
-
-  def UnLock(self):
-    """Give up the lock."""
-    os.unlink(self.STATUSLINE_LOCK)
-    return
-
-  def Lock(self):
-    """Set the lock."""
-    lock = open(self.STATUSLINE_LOCK, 'w')
-    lock.write(str(os.getpid()))
-    lock.close()
-
-  def GetLock(self):
-    """Simple process locking using a pid."""
-    try:
-      lock = open(self.STATUSLINE_LOCK)
-      pid = lock.readline()
-      lock.close()
-    except:
-      pid = None
-    if not self.CheckPid(pid):
-      self.Lock()
-    else:
-      print 'Can\'t get lock, another process is already running.'
-      exit(1)
-    return
-
-  def SigHandler(self, SIG, FRM):
-    print 'Caught signal %s, exiting.' % SIG
-    self.sock.close()
-    self.UnLock()
-    exit(0)
-
-  def Run(self, modules):
-    """Listen on self.PORT for a connection and update stats and return them."""
-    self.sock.bind((self.HOST, self.PORT))
-    self.sock.listen(3)
-    while True:
-      conn = self.sock.accept()[0]
-      statusline = ''
-      for module in modules:
-        statusline += '%s' % module.Update()
-      conn.send(statusline)
-      conn.close()
-
-
-if __name__ == "__main__":
-  sl = StatusLine()
-
-  # Setup the signal handler.
-  for signum in [1, 2, 15]:
-    signal.signal(signum, sl.SigHandler)
-
-  # Setup modules.
-  network = Network()
-  load = Load()
-  clock = Clock()
-
-  # List modules in the order they should appear in the statusline output.
-  sl.Run([network, load, clock])
