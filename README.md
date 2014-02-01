@@ -11,6 +11,6 @@ This should use much less resources than the tradtional bash scripts.  Also note
 
 Use the `statusline.sh` script for your tmux status-right:
 
-    set -g status-right "#(${HOME}/tmux-statusline/statusline.sh)"
+    set -g status-right "#(${HOME}/tmux-statusline/tmux_statusline.sh)"
 
 Configure the python script to show the modules you want and the order you want.
