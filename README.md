@@ -14,3 +14,5 @@ Use the `statusline.sh` script for your tmux status-right:
     set -g status-right "#(${HOME}/tmux-statusline/tmux_statusline.sh)"
 
 Configure the python script to show the modules you want and the order you want.
+
+Copy the `tmux_statuslinerc.example` file to `~/.tmux_statuslinerc` if you want to limit network to a specific interface.

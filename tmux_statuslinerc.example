@@ -1,0 +1,5 @@
+{
+  "network": {
+    "interface": "eth0"
+  }
+}
