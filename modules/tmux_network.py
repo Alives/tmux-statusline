@@ -18,8 +18,12 @@ class Network():
   PREFIX = '#[fg=colour27,bg=colour0]#[bg=colour27]'
   SUFFIX = '#[fg=colour0,bg=colour27]#[bg=colour0]'
 
-  def __init__(self):
+  def __init__(self, conf):
     self.os_type = os.uname()[0]
+    if 'interface' in conf:
+      self.interface = conf['interface']
+    else:
+      self.interface = 'all'
     self.prev_stats = {'rxbytes': 0, 'txbytes': 0, 'time': 0}
     self.curr_stats = {'rxbytes': 0, 'txbytes': 0, 'time': 0}
     self.rates = {'rx': {'icon': '↓', 'rate': 0, 'units': ''},
@@ -46,6 +50,8 @@ class Network():
         if 'lo' in data[0] or 'Name' in data[0]:
           continue
         interface = data[0]
+        if interface != self.interface and self.interface != 'all':
+          continue
         if interface in interfaces:
           continue
         try:
@@ -64,7 +70,9 @@ class Network():
         data = line.split()
         if 'lo' in data or 'Inter-' in data or 'face' in data:
           continue
-        interface = data[0]
+        interface = data[0].split(':')[0]
+        if interface != self.interface and self.interface != 'all':
+          continue
         if interface in interfaces:
           continue
         try:

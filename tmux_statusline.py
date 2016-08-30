@@ -9,6 +9,7 @@ request.
 """
 
 
+import json
 import os
 import signal
 import socket
@@ -84,6 +85,15 @@ class StatusLine():
 
 
 if __name__ == "__main__":
+  conf_file = os.path.join(os.path.expanduser('~'), '.tmux_statuslinerc')
+  if os.path.exists(conf_file):
+    with open(conf_file) as f:
+      conf = json.load(f)
+    if 'network' not in conf or 'interface' not in conf['network']:
+      conf['network'] = {'interface': 'all'}
+  else:
+    conf = {'network': {'interface': 'all'}}
+
   sl = StatusLine()
 
   # Setup the signal handler.
@@ -91,7 +101,7 @@ if __name__ == "__main__":
     signal.signal(signum, sl.SigHandler)
 
   # Setup modules.
-  network = Network()
+  network = Network(conf['network'])
   load = Load()
   clock = Clock()
 
