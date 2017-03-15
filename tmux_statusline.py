@@ -54,7 +54,7 @@ class StatusLine():
     """Simple process locking using a pid."""
     try:
       lock = open(self.STATUSLINE_LOCK)
-      pid = lock.readline()
+      pid = int(lock.readline())
       lock.close()
     except:
       pid = None
