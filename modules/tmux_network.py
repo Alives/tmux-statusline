@@ -66,6 +66,8 @@ class Network():
       output = proc_net_dev.readlines()
       proc_net_dev.close()
       self.curr_stats['time'] = time()
+      if self.interface not in output:
+        self.interface = 'all'
       for line in output:
         data = line.split()
         if 'lo' in data or 'Inter-' in data or 'face' in data:
